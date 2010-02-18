@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+%rss{ :version => '2.0' }
+  %channel
+    %title Tumblr Dashboard
+    %link http://tumblr.com
+    %description/
+    - items.each do |item|
+      %item
+        %title= item[:title]
+        %description
+          :cdata
+            #{item[:description]}
+        %link= # post[:link]
+        %guid= # post[:link]
+        %pubDate= # post[:pubdate]
