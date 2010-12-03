@@ -1,0 +1,15 @@
+%html
+  %head
+    %title Tumblr Dashboard
+    %link{ :rel => 'stylesheet', :href => 'stylesheets/dashboard.css' }
+  %body
+    - items.each do |item|
+      %article
+        %header
+          %h1
+            %a{ :href => item[:link] }= item[:title]
+        
+          %p.date
+            %time= item[:pubdate]
+
+        = item[:description]

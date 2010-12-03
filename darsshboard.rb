@@ -4,25 +4,31 @@
 
 require 'rubygems'
 require 'open-uri'
-require 'crack'
+require 'json'
 require 'haml'
 
 # figure stuff out
 
-api_url = "http://www.tumblr.com/api/dashboard"
-email, password = ARGV
+api_url = "http://www.tumblr.com/api/dashboard/json"
+email, password, format = ARGV
 num = 20
-summary_length = 40
-output = 'dashboard.rss'
 
 # get those guys
 
-xml = open("#{api_url}?email=#{email}&password=#{password}&num=#{num}").read
-tumblr = Crack::XML.parse(xml)
+json = open("#{api_url}?email=#{email}&password=#{password}&num=#{num}").read.gsub(/(^var tumblr_api_read = |;$)/, '')
+tumblr = JSON.parse json
 
-# cut them up
+# one moment
 
-items = tumblr['tumblr']['posts']['post'].map do |post|
+# convert unicode characters into html entities
+# courtesy of http://snippets.dzone.com/posts/show/1161
+def c(str)
+  str.split('').map{ |c| c[0] > 127 ? "&##{c[0]};" : c }.join('')
+end
+
+# slice and dice
+
+items = tumblr['posts'].map do |post|
   type = post['type'].to_sym
   
   title_field = case type
@@ -33,8 +39,10 @@ items = tumblr['tumblr']['posts']['post'].map do |post|
   end
   
   if title_field
-    title_field = "#{type}_#{title_field}"
+    title_field = "#{type}-#{title_field}"
     title = post[title_field]
+  else
+    title = type.to_s.capitalize
   end
 
   description_field = case type
@@ -46,24 +54,52 @@ items = tumblr['tumblr']['posts']['post'].map do |post|
       :text
   end
   
-  description_field = "#{type}_#{description_field}"
-  description = post[description_field]
+  description = ''
+  
+  if description_field
+    description_field = "#{type}-#{description_field}"
+    description = post[description_field] || ''
+  end
   
   case type
     when :photo
-      description = "<p><img src=\"#{post['photo_url'].first}\"></p>" + description
+      img = "<img src=\"#{post['photo-url-500']}\">"
+      
+      photo_href = post['photo-link-url'] || post['photo-url-1280']
+
+      if photo_href
+        img = "<a href=\"#{photo_href}\">#{img}</a>"
+      end
+      
+      description = "<p>#{img}</p>" + description
+      
+    when :audio, :video
+      description = post["#{type}-player"] + description
+      
+    when :quote
+      description += "<p><em>&mdash; #{post['quote-source']}</em></p>"
+      
+    when :answer
+      description = "<p><strong>#{post['question']}</strong></p> #{post['answer']}"
   end
   
-  if title.blank?
-    title = description.gsub(/<[^>]+>/, '').gsub(/\s+/, ' ')
-    if title.size > summary_length
-      title = title[0 .. summary_length - 1] + '...'
-    end
+  if post['tags']
+    description += '<p class="tags"><em>' + post['tags'].map{ |t| "##{t}" }.join(' ') + '</em></p>'
   end
+  
+  # NO, we don't want summaries, summaries are the worst
+  
+  # summary_length = 40
+  # if title.blank?
+  #   title = description.gsub(/<[^>]+>/, '').gsub(/\s+/, ' ')
+  #   if title.size > summary_length
+  #     title = title[0 .. summary_length - 1] + '...'
+  #   end
+  # end
   
   {
-    :title => "#{post['tumblelog']}: #{title}",
-    :description => description,
+    :title => "#{c post['tumblelog']['title']} - #{title}",
+    :description => c(description),
     :link => post['url-with-slug'],
     :pubdate => post['date']
   }
@@ -71,5 +107,13 @@ end
 
 # spit into this cup
 
-template = File.read('rss.haml')
+format = format.downcase
+formats = %w[rss html]
+if !formats.include? format
+  format = formats.first
+end
+
+template = File.read(File.join 'output', 'templates', "#{format}.haml")
+output = File.join( 'output', "dashboard.#{format}")
+
 File.open(output, 'w'){ |f| f.write(Haml::Engine.new(template).render(Object.new, :items => items)) }

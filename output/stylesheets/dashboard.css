@@ -1,0 +1,7 @@
+ul, li, h1, p, div, object { margin: 0; padding: 0; }
+article, header, footer { display: block; }
+
+article { width: 500px; padding-bottom: 11px; border-bottom: 1px solid #CCC; margin: 0 auto 24px; }
+header { margin-bottom: 24px; }
+header h1 a { display: block; color: inherit; text-decoration: none; }
+p, li, object, embed { margin-bottom: 12px; }
