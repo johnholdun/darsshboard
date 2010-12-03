@@ -11,7 +11,7 @@ require 'haml'
 
 api_url = "http://www.tumblr.com/api/dashboard/json"
 email, password, format = ARGV
-num = 20
+num = 50
 
 # get those guys
 
@@ -75,9 +75,16 @@ items = tumblr['posts'].map do |post|
       description = "<p><strong>#{post['question']}</strong></p> #{post['answer']}"
   end
   
+  # lol inline styles
+  description += '<div style="overflow: hidden; background: #EEE; -webkit-border-radius: 4px; -moz-border-radius: 4px; padding: 4px;">'
+  
   if post['tags']
-    description += '<p class="tags"><em>' + post['tags'].map{ |t| "##{t}" }.join(' ') + '</em></p>'
+    description += '<p style="margin: 0; padding: 0; float: left; font-style: italic; color: #555; font-size: 0.75em; line-height: 1.333em;">' + post['tags'].map{ |t| "##{t}" }.join(' ') + '</p>'
   end
+  
+  description += "<a style=\"float: right; margin: -4px -4px -4px -8px; padding: 4px 4px 4px 8px; color: #333; text-decoration: none;\" href=\"http://tumblr.com/like/#{post['reblog-key']}?id=#{post['id']}&redirect_to=/likes\">&hearts;</a>"
+  
+  description += '</div>'
   
   # NO, we don't want summaries, summaries are the worst
   
@@ -91,7 +98,7 @@ items = tumblr['posts'].map do |post|
   
   {
     :title => "#{post['tumblelog']['title']} - #{title}",
-    :description => c(description),
+    :description => description,
     :link => post['url-with-slug'],
     :pubdate => post['date']
   }
