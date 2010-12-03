@@ -16,8 +16,6 @@ Supported formats include `rss` and `html`. Default is `rss` of course.
 
 - Photosets and answer posts might not display properly. They might even raise errors.
 - Every post's title is simply prepended with the tumblelog's title. The RSS feed is just called "Tumblr Dashboard." Not much I can do about this.
-- <s>Unicode characters are being converted into HTML entities but they're already garbled by the time I get to them. I have neither the knowledge nor motivation to fix this (fork me please).</s>
-  Fixed it myself. I regret nothing.
 - This should use OAuth. Did you know that [Tumblr supports OAuth](http://staff.tumblr.com/post/806396160/oauth)?
 - The included stylesheet (for HTML output) is pretty plain but I really shouldn't have ever built in HTML output anyway.
 - Post summaries are ignored by design. The (possibly broken) code to include them is in there, commented out, if you want it. I don't. I hate them.
