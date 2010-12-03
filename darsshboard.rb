@@ -16,15 +16,7 @@ num = 20
 # get those guys
 
 json = open("#{api_url}?email=#{email}&password=#{password}&num=#{num}").read.gsub(/(^var tumblr_api_read = |;$)/, '')
-tumblr = JSON.parse json
-
-# one moment
-
-# convert unicode characters into html entities
-# courtesy of http://snippets.dzone.com/posts/show/1161
-def c(str)
-  str.split('').map{ |c| c[0] > 127 ? "&##{c[0]};" : c }.join('')
-end
+tumblr = JSON.parse json.gsub(/\\u([0-9A-F]{4})/i, '&#x\1;')
 
 # slice and dice
 
@@ -98,7 +90,7 @@ items = tumblr['posts'].map do |post|
   # end
   
   {
-    :title => "#{c post['tumblelog']['title']} - #{title}",
+    :title => "#{post['tumblelog']['title']} - #{title}",
     :description => c(description),
     :link => post['url-with-slug'],
     :pubdate => post['date']
