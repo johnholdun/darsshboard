@@ -1,2 +1,3 @@
 .DS_Store
-dashboard.rss
+output/dashboard.rss
+output/dashboard.html
