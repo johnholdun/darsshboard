@@ -82,6 +82,7 @@ items = tumblr['posts'].map do |post|
       description = "<p><strong>#{post['question']}</strong></p> #{post['answer']}"
       
     when :link
+      title += " &rsaquo;"
       description += "<p><a href=\"#{post['url-with-slug']}\">#</a></p>"
   end
   
